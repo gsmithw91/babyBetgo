@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BabyBetGo</title>
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+
+  <h1>BabyBetGo</h1>
+
+  <div id="balance">
+    Balance: <span id="balance-value">Loading...</span>
+  </div>
+
+  <div id="events">
+    <h2>Available Events</h2>
+    <div hx-get="/get_initial_data" hx-target="#events">Loading...</div>
+  </div>
+
+  <div id="place_bet_form">
+    <h2>Place a Bet</h2>
+    <form hx-post="/place_bet" hx-target="#bet_result" hx-swap="innerHTML">
+      <label for="event_id">Event ID:</label>
+      <select id="event_id" name="event_id">
+        <!-- Options will be populated dynamically via HTMX -->
+      </select>
+
+      <label for="bet_amount">Bet Amount:</label>
+      <input type="number" id="bet_amount" name="bet_amount" required>
+
+      <button type="submit">Place Bet</button>
+    </form>
+    <div id="bet_result"></div>
+  </div>
+
+  <script>
+    // Periodically refresh the balance
+    setInterval(function() {
+      htmx.request({
+        url: "/get_user_balance",
+        target: "#balance-value"
+      });
+    }, 1000); // Refresh every 1 second (adjust as needed)
+  </script>
+
+</body>
+</html>
