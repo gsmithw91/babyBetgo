@@ -2,46 +2,23 @@
 <html>
 <head>
   <title>BabyBetGo</title>
-  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <!-- Make sure to run the Go server from the project root for static file serving to work -->
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-  <h1>BabyBetGo</h1>
-
-  <div id="balance">
-    Balance: <span id="balance-value">Loading...</span>
+  <div class="flex justify-between items-center p-4">
+    <h1 class="text-3xl font-bold text-indigo-700">BabyBetGo</h1>
+    <button id="auth-modal-btn" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">Login / Register</button>
   </div>
 
-  <div id="events">
-    <h2>Available Events</h2>
-    <div hx-get="/get_initial_data" hx-target="#events">Loading...</div>
-  </div>
+  {{ template "auth_modal.htmx" . }}
+  {{ template "events.htmx" . }}
+  {{ template "bet_form.htmx" . }}
 
-  <div id="place_bet_form">
-    <h2>Place a Bet</h2>
-    <form hx-post="/place_bet" hx-target="#bet_result" hx-swap="innerHTML">
-      <label for="event_id">Event ID:</label>
-      <select id="event_id" name="event_id">
-        <!-- Options will be populated dynamically via HTMX -->
-      </select>
-
-      <label for="bet_amount">Bet Amount:</label>
-      <input type="number" id="bet_amount" name="bet_amount" required>
-
-      <button type="submit">Place Bet</button>
-    </form>
-    <div id="bet_result"></div>
-  </div>
-
-  <script>
-    // Periodically refresh the balance
-    setInterval(function() {
-      htmx.request({
-        url: "/get_user_balance",
-        target: "#balance-value"
-      });
-    }, 1000); // Refresh every 1 second (adjust as needed)
-  </script>
+  <script src="/static/auth.js"></script>
+  <!-- To auto-refresh the balance, use hx-get and hx-trigger="every 1s" on the balance element -->
 
 </body>
 </html>

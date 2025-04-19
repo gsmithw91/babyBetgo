@@ -1,0 +1,5 @@
+<!-- Events Partial -->
+<div id="events">
+  <h2>Available Events</h2>
+  <div hx-get="/get_initial_data" hx-target="#events">Loading...</div>
+</div>
