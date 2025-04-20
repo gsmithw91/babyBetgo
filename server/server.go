@@ -2,30 +2,34 @@ package server
 
 import (
 	"babybetgo/handlers"
-	// Make sure handlers.DB is initialized before calling ServerStart()
-
+	"babybetgo/middleware"
 	"log"
 	"net/http"
+
+	// Make sure handlers.DB is initialized before calling ServerStart()
+
+	"github.com/go-chi/chi"
 )
 
 func ServerStart() {
 
-	mux := http.NewServeMux()
+	r := chi.NewRouter()
 
-	mux.HandleFunc("/", handlers.IndexHandler)
-	mux.HandleFunc("/register", handlers.RegisterHandler)
-	mux.HandleFunc("/login", handlers.LoginHandler)
-	mux.HandleFunc("/get_user_balance", handlers.GetUserBalanceHandler)
-	// Serve static files
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	//Middleware
+	r.Use(middleware.LoggingMiddleware)
 
-	server := http.Server{
-		Addr:    ":8040",
-		Handler: mux,
-	}
+	//Routes
+	r.Get("/", handlers.IndexHandler)
+	r.Post("/register", handlers.RegisterHandler)
+	r.Post("/login", handlers.LoginHandler)
+	r.Get("/users/{id}", handlers.UserProfileHandler) //dynamic Routes
 
-	log.Println("Starting server on :8040")
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("static")))
+
+	r.Handle("/static/", fileServer)
+
+	log.Println("Starting Server on :8040")
+	if err := http.ListenAndServe(":8040", r); err != nil {
+		log.Println("server shutdown")
 	}
 }
