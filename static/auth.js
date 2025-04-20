@@ -1,5 +1,7 @@
+import { showToast } from "./utils.js";
+
 // Modal logic for auth (login/register)
-(function() {
+(function () {
   let modalBtn = document.getElementById("auth-modal-btn");
   let modal = document.getElementById("auth-modal");
   let closeModal = document.getElementById("close-modal");
@@ -35,13 +37,13 @@
       registerWrap.classList.remove("hidden");
       loginWrap.classList.add("hidden");
     };
-    window.onclick = function(event) {
+    window.onclick = function (event) {
       if (event.target === modal) {
         modal.classList.add("hidden");
       }
     };
     // Handle login
-    document.getElementById("login-form").onsubmit = async function(e) {
+    document.getElementById("login-form").onsubmit = async function (e) {
       e.preventDefault();
       const form = e.target;
       console.log("Login form submitted");
@@ -57,31 +59,29 @@
         });
         const msg = document.getElementById("login-message");
         console.log("Login response status:", res.status);
+
         if (res.ok) {
-          msg.textContent = "Login successful!";
-          msg.className = "mt-2 text-green-600 text-sm text-center";
-          setTimeout(() => {
-            modal.classList.add("hidden");
-            // Refresh balance value using HTMX (if htmx is loaded)
-            if (window.htmx) {
-              const balanceEl = document.querySelector("#balance-value");
-              if (balanceEl && window.htmx) {
-                window.htmx.trigger(balanceEl, "refresh");
-              }
+          showToast("Login successful!");
+          modal.classList.add("hidden");
+          if (window.htmx) {
+            const balanceEl = document.querySelector("#balance-value");
+            if (balanceEl) {
+              window.htmx.trigger(balanceEl, "refresh");
             }
-          }, 1000);
+          }
         } else {
           const errorText = await res.text();
           console.error("Login error:", errorText);
           msg.textContent = errorText;
           msg.className = "mt-2 text-red-600 text-sm text-center";
+          showToast(errorText, 5000);
         }
       } catch (err) {
         console.error("Network error during login:", err);
       }
     };
     // Handle register
-    document.getElementById("register-form").onsubmit = async function(e) {
+    document.getElementById("register-form").onsubmit = async function (e) {
       e.preventDefault();
       const form = e.target;
       console.log("Register form submitted");
@@ -115,8 +115,7 @@
         const msg = document.getElementById("register-message");
         console.log("Register response status:", res.status);
         if (res.ok) {
-          msg.textContent = "Registration successful!";
-          msg.className = "mt-2 text-green-600 text-sm text-center";
+          showToast("Registration successful!");
           setTimeout(() => {
             tabLogin.click();
             msg.textContent = "";
@@ -126,6 +125,7 @@
           console.error("Register error:", errorText);
           msg.textContent = errorText;
           msg.className = "mt-2 text-red-600 text-sm text-center";
+          showToast(errorText, 5000);
         }
       } catch (err) {
         console.error("Network error during registration:", err);

@@ -1,24 +1,38 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <title>BabyBetGo</title>
-  <!-- Make sure to run the Go server from the project root for static file serving to work -->
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
+  <head>
+    <title>BabyBetGo</title>
+    <!-- Make sure to run the Go server from the project root for static file serving to work -->
+    <!-- @apply-->
 
-  <div class="flex justify-between items-center p-4">
-    <h1 class="text-3xl font-bold text-indigo-700">BabyBetGo</h1>
-    <button id="auth-modal-btn" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">Login / Register</button>
-  </div>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="bg-gray-50 min-h-screen text-gray-800 font-sans">
 
-  {{ template "auth_modal.htmx" . }}
-  {{ template "events.htmx" . }}
-  {{ template "bet_form.htmx" . }}
+    <!--App Wrapper -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
 
-  <script src="/static/auth.js"></script>
-  <!-- To auto-refresh the balance, use hx-get and hx-trigger="every 1s" on the balance element -->
+      <!--Header-->
+      <header class="flex items-center justify-between mb-8">
+        <h1 class="text-4xl font-extrabold text-blue-700 tracking-tight">BabyBetGo</h1>
+        <button
+          id="auth-modal-btn"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          Login / Register
+        </button>
+      </header>
+  
+      <main class="space-y-8">
+       {{ template "auth_modal.htmx" . }} {{ template "events.htmx" . }} {{
+       template "bet_form.htmx" . }}
+      </main>
+    </div>
+ 
+    <script type="module" src="/static/auth.js"></script>
 
-</body>
+  </body>
 </html>

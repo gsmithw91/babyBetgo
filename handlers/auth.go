@@ -78,11 +78,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		profilePic = sql.NullString{String: *req.ProfilePictureURL, Valid: true}
 	}
 
-	// Log for dev debugging
-	fmt.Printf("Inserting user: %+v\n", req)
-	fmt.Println("SQL values:", req.Username, req.Email, phone, bio, displayName)
-
-	// Insert user into database
 	_, err = db.Exec(`
 		INSERT INTO users (
 			username, password_hash, balance, email, role, is_active,
