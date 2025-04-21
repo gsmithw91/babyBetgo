@@ -1,3 +1,4 @@
+// authHandlers.go
 package handlers
 
 import (
@@ -6,11 +7,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var _ = utils.JSONResponse{} // compile-time usage assurance
 
 type RegisterRequest struct {
 	Username          string  `json:"username"`
@@ -30,14 +34,14 @@ type LoginRequest struct {
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		utils.ErrorResponse(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
 	// Hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		utils.ErrorResponse(w, "Unable to hash password", http.StatusInternalServerError)
 		return
 	}
 
@@ -50,11 +54,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		req.Username, req.Email,
 	).Scan(&exists)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 	if exists {
-		http.Error(w, "Username or email already taken", http.StatusConflict)
+		utils.ErrorResponse(w, "Username or email already taken", http.StatusConflict)
 		return
 	}
 
@@ -96,13 +100,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			http.Error(w, "Username or email already taken", http.StatusConflict)
+			utils.ErrorResponse(w, "Username or email already taken", http.StatusConflict)
 			return
 		}
-		http.Error(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
+		utils.ErrorResponse(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
 		return
 	}
-
+	log.Printf("Reigster Handler attempted for  : ", req.Username)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("User registered successfully"))
 }
@@ -124,7 +128,7 @@ type UserSummary struct {
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		utils.ErrorResponse(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
@@ -133,21 +137,21 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		&user.ID, &user.Username, &user.PasswordHash, &user.Balance, &user.Email, &user.CreatedAt, &user.UpdatedAt, &user.IsActive, &user.LastLogin, &user.ProfilePictureURL, &user.Role, &user.DisplayName, &user.Bio, &user.PhoneNumber,
 	)
 	if err == sql.ErrNoRows {
-		http.Error(w, "User not found", http.StatusUnauthorized)
+		utils.ErrorResponse(w, "User not found", http.StatusUnauthorized)
 		return
 	} else if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, "Database error", http.StatusInternalServerError)
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		http.Error(w, "Incorrect password", http.StatusUnauthorized)
+		utils.ErrorResponse(w, "Incorrect password", http.StatusUnauthorized)
 		return
 	}
 
 	token, err := utils.GenerateJWT(user.ID, user.Username, user.Role)
 	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		utils.ErrorResponse(w, "Failed to generate token", http.StatusInternalServerError)
 		return
 	}
 
@@ -163,8 +167,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	jsonResp := utils.JSONResponse{
+		Status:  "success",
+		Message: "successfully logged in",
+		Data:    resp,
+	}
+
+	utils.WriteJSON(w, http.StatusOK, jsonResp)
 }
 
 func unwrapNullString(s *string) string {

@@ -1,3 +1,4 @@
+// handlers.go
 package handlers
 
 import (
@@ -17,6 +18,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		"templates/balance.htmx",
 		"templates/events.htmx",
 		"templates/bet_form.htmx",
+		"templates/user_info.htmx",
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

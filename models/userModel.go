@@ -1,3 +1,4 @@
+// userModel.go
 package models
 
 import (
@@ -8,7 +9,6 @@ import (
 type User struct {
 	ID                int            `json:"id"`
 	Username          string         `json:"username"`
-	Password          string         `json:"password,omitempty"`
 	PasswordHash      string         `json:"-"`
 	Balance           int            `json:"balance"`
 	Email             sql.NullString `json:"email"`
@@ -21,4 +21,12 @@ type User struct {
 	DisplayName       *string        `json:"display_name,omitempty"`
 	Bio               *string        `json:"bio,omitempty"`
 	PhoneNumber       *string        `json:"phone_number,omitempty"`
+}
+
+func (u *User) ScanRow(row *sql.Row) error {
+	return row.Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Balance, &u.Email, &u.Balance, &u.CreatedAt, &u.UpdatedAt, &u.LastLogin, &u.ProfilePictureURL, &u.Role, &u.PhoneNumber)
+}
+
+func (u *User) ScanRows(rows *sql.Rows) error {
+	return rows.Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Balance, &u.Email, &u.Balance, &u.CreatedAt, &u.UpdatedAt, &u.LastLogin, &u.ProfilePictureURL, &u.Role, &u.PhoneNumber)
 }

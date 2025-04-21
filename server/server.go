@@ -15,18 +15,24 @@ func ServerStart() {
 
 	r := chi.NewRouter()
 
-	//Middleware
+	// Middleware for all
 	r.Use(middleware.LoggingMiddleware)
 
-	//Routes
+	// Unprotected Routes
 	r.Get("/", handlers.IndexHandler)
 	r.Post("/register", handlers.RegisterHandler)
 	r.Post("/login", handlers.LoginHandler)
 	r.Get("/users/{id}", handlers.UserProfileHandler) //dynamic Routes
 
-	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir("static")))
+	// Protected Routes
+	r.Group(func(protected chi.Router) {
+		protected.Use(middleware.RequireAuth)
+		protected.Get("/me", handlers.MeHandler)
+		protected.Get("/user_info_partial", handlers.UserInfoPartialHandler)
+		protected.Post("/create_pregnancy", handlers.CreatePregnancyHandler)
+	})
 
-	r.Handle("/static/", fileServer)
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	log.Println("Starting Server on :8040")
 	if err := http.ListenAndServe(":8040", r); err != nil {

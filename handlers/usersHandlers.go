@@ -1,56 +1,131 @@
+// usersHandlers.go
 package handlers
 
 import (
 	"babybetgo/models"
 	"babybetgo/utils"
 	"database/sql"
-	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
+	"text/template"
+	"time"
 
 	"github.com/go-chi/chi"
 )
 
+type PublicUserProfile struct {
+	ID                int     `json:"id"`
+	Username          string  `json:"username"`
+	DisplayName       *string `json:"display_name,omitempty"`
+	ProfilePictureURL *string `json:"profile_picture_url,omitempty"`
+	Bio               *string `json:"bio,omitempty"`
+	Role              string  `json:"role"`
+}
+
 func UserProfileHandler(w http.ResponseWriter, r *http.Request) {
-
 	idStr := chi.URLParam(r, "id")
-	log.Println("User route hit with id: ", idStr)
-
 	id, err := strconv.Atoi(idStr)
 	if err != nil || id <= 0 {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		utils.ErrorResponse(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	var user models.User
-
-	err = DB.QueryRow(`SELECT id, username, email, created_at, updated_at, is_active, last_login, profile_picture_url, role, display_name, bio, phone_number, balance FROM users WHERE id=$1`, id).
-		Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt, &user.IsActive, &user.LastLogin, &user.ProfilePictureURL, &user.Role, &user.DisplayName, &user.Bio, &user.PhoneNumber, &user.Balance)
+	user := &models.User{}
+	err = user.ScanRow(DB.QueryRow(`
+		SELECT id, username, email, created_at, updated_at, is_active, last_login,
+		       profile_picture_url, role, display_name, bio, phone_number, balance
+		FROM users WHERE id = $1`, id))
 
 	if err == sql.ErrNoRows {
-		http.Error(w, "User not found", http.StatusNotFound)
+		utils.ErrorResponse(w, "User not found", http.StatusNotFound)
 		return
 	} else if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		utils.ErrorResponse(w, "Database error", http.StatusInternalServerError)
 		return
-
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
 
+	resp := PublicUserProfile{
+		ID:                user.ID,
+		Username:          user.Username,
+		DisplayName:       user.DisplayName,
+		ProfilePictureURL: user.ProfilePictureURL,
+		Bio:               user.Bio,
+		Role:              user.Role,
+	}
+	jsonResp := utils.JSONResponse{
+		Status:  "success",
+		Message: "Retrieved public profile1",
+		Data:    resp,
+	}
+	utils.WriteJSON(w, http.StatusOK, jsonResp)
+}
+
+func UserInfoPartialHandler(w http.ResponseWriter, r *http.Request) {
+	claims, err := utils.GetClaimsFromContext(r.Context())
+	if err != nil {
+		utils.ErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	user := &models.User{}
+	err = user.ScanRow(DB.QueryRow(`
+		SELECT id, username, email, balance, role, display_name 
+		FROM users WHERE id = $1`, claims.UserID))
+
+	if err == sql.ErrNoRows {
+		utils.ErrorResponse(w, "User not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		utils.ErrorResponse(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("templates/user_info.htmx")
+	if err != nil {
+		utils.ErrorResponse(w, "Template error", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, user)
 }
 
 func MeHandler(w http.ResponseWriter, r *http.Request) {
-
-	claims, ok := r.Context().Value("user").(*utils.Claims)
-	if !ok || claims == nil {
-		http.Error(w, "Unauthoroized", http.StatusUnauthorized)
+	claims, err := utils.GetClaimsFromContext(r.Context())
+	if err != nil {
+		utils.ErrorResponse(w, "Unauthorized", http.StatusUnauthorized)
 		return
-
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp)
+	user := &models.User{}
+	err = user.ScanRow(DB.QueryRow(`
+		SELECT id, username, email, balance, role, display_name
+		FROM users WHERE id = $1`, claims.UserID))
+
+	if err == sql.ErrNoRows {
+		utils.ErrorResponse(w, "/me route used, User not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		utils.ErrorResponse(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	resp := UserSummary{
+		ID:          user.ID,
+		Username:    user.Username,
+		DisplayName: unwrapNullString(user.DisplayName),
+		Role:        user.Role,
+		Email:       user.Email.String,
+		Balance:     user.Balance,
+	}
+
+	jsonResp := utils.JSONResponse{
+		Status:  "success",
+		Message: "Retrieved user details",
+		Data: map[string]interface{}{
+			"user":        resp,
+			"server_time": time.Now(),
+		},
+	}
+	utils.WriteJSON(w, http.StatusOK, jsonResp)
+
 }

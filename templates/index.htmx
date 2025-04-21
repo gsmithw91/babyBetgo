@@ -27,8 +27,19 @@
       </header>
   
       <main class="space-y-8">
-       {{ template "auth_modal.htmx" . }} {{ template "events.htmx" . }} {{
-       template "bet_form.htmx" . }}
+       {{ template "auth_modal.htmx" . }}
+        <div
+          id="user-info"
+          hx-get="/user_info_partial"
+          hx-trigger="load,updateUserInfo from:body"
+          hx-swap="outerHTML"
+  
+          >
+          Loading user information...
+        </div>
+        
+       {{ template "events.htmx" . }}
+       {{ template "bet_form.htmx" . }}
       </main>
     </div>
  
