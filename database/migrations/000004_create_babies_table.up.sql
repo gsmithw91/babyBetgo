@@ -1,0 +1,8 @@
+CREATE TABLE babies(
+  id SERIAL PRIMARY KEY,
+  pregnancy_id INTEGER NOT NULL REFERENCES pregnancies(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  baby_name TEXT NOT NULL DEFAULT 'default_baby',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);

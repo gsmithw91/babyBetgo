@@ -106,7 +106,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, fmt.Sprintf("Failed to create user: %v", err), http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Reigster Handler attempted for  : ", req.Username)
+	log.Printf("Reigster Handler attempted for  : %s", req.Username)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("User registered successfully"))
 }

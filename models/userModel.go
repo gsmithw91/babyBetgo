@@ -24,7 +24,10 @@ type User struct {
 }
 
 func (u *User) ScanRow(row *sql.Row) error {
-	return row.Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Balance, &u.Email, &u.Balance, &u.CreatedAt, &u.UpdatedAt, &u.LastLogin, &u.ProfilePictureURL, &u.Role, &u.PhoneNumber)
+
+	return row.Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Balance, &u.Email,
+		&u.CreatedAt, &u.UpdatedAt, &u.IsActive, &u.LastLogin, &u.ProfilePictureURL,
+		&u.Role, &u.DisplayName, &u.Bio, &u.PhoneNumber)
 }
 
 func (u *User) ScanRows(rows *sql.Rows) error {

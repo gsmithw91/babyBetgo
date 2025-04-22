@@ -1,3 +1,5 @@
+//server.go
+
 package server
 
 import (
@@ -30,6 +32,8 @@ func ServerStart() {
 		protected.Get("/me", handlers.MeHandler)
 		protected.Get("/user_info_partial", handlers.UserInfoPartialHandler)
 		protected.Post("/create_pregnancy", handlers.CreatePregnancyHandler)
+		protected.Post("/pregnancies/{id}/baby", handlers.CreateBabyHandler)
+		protected.Post("/pregnancies/{id}/access", handlers.CreateBabyHandler)
 	})
 
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
