@@ -1,0 +1,31 @@
+<!-- base.htmx -->
+<!doctype html>
+<html >
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Baby</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script type="module" src="/static/auth.js"></script>
+    <link rel="stylesheet" href="/static/styles.css"/>
+    <link rel="icon" href="/static/favicon.ico" />
+  </head>
+  
+</html>
+
+<body class="bg-gray-50 min-h-screen text-gray-800 font-sans">
+  <div class="max-w-4xl mx-auto px-4 py-6">
+    <header class="flex items-center justify-between mb-8">
+      <div id="navbar" hx-get="/templates/navbar.htmx" hx-trigger="load" hx-swap="outerHTML">
+          Loading Navigation
+      </div>
+    </header>
+    <main id="page-content">
+      <div hx-get="/templates/home.htmx" hx-trigger="load" hx-swap="outerHTML">
+          Loading home....
+      </div>
+
+    </main>
+  </div>
+  <div id="modal-slot"></div>
+</body>

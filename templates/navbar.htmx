@@ -1,0 +1,39 @@
+
+<!-- navbar.htmx -->
+<nav>
+  <button
+    hx-get="/home"
+    hx-target="#page-content"
+    hx-swap="innerHTML"
+    hx-push-url="/templates/home.htmx"
+    class="hover:text-blue-600 transition">
+    Home
+  </button>
+
+  <button
+    hx-get="/events"
+    hx-target="#page-content"
+    hx-swap="innerHTML"
+    hx-push-url="/events"
+    class="hover:text-blue-600 transition">
+    Events
+  </button>
+
+  <button
+    hx-get="/bet_form"
+    hx-target="#page-content"
+    hx-swap="innerHTML"
+    hx-push-url="/bet"
+    class="hover:text-blue-600 transition">
+    Bet!
+  </button>
+
+ 
+  <button
+    hx-get="/templates/auth_modal.htmx"
+    hx-target="#modal-slot"
+    hx-swap="innerHTML"
+    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+    Login/Register
+  </button>
+</nav>

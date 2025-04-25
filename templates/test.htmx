@@ -1,6 +1,4 @@
-
-
-
+<!-- test.htmx -->
 <button hx-get="/your-endpoint" hx-target="#output" hx-swap="innerHTML">Click me</button>
 
 

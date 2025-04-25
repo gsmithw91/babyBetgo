@@ -1,27 +1,41 @@
-
 import { showToast } from "./utils.js";
 
-// Modal logic for auth (login/register)
-(function() {
-  let modalBtn = document.getElementById("auth-modal-btn");
-  let modal = document.getElementById("auth-modal");
-  let closeModal = document.getElementById("close-modal");
-  let tabLogin = document.getElementById("tab-login");
-  let tabRegister = document.getElementById("tab-register");
-  let loginWrap = document.getElementById("login-form-wrap");
-  let registerWrap = document.getElementById("register-form-wrap");
+(function () {
+  // ===============================
+  // 🔧 DOM Element Cache
+  // ===============================
+  let modal, modalBtn, closeModal, tabLogin, tabRegister, loginWrap, registerWrap;
 
-  if (
-    modalBtn &&
-    modal &&
-    closeModal &&
-    tabLogin &&
-    tabRegister &&
-    loginWrap &&
-    registerWrap
-  ) {
-    modalBtn.onclick = () => modal.classList.remove("hidden");
+  const cacheDom = () => {
+    modalBtn = document.getElementById("auth-modal-btn");
+    modal = document.getElementById("auth-modal");
+    closeModal = document.getElementById("close-modal");
+    tabLogin = document.getElementById("tab-login");
+    tabRegister = document.getElementById("tab-register");
+    loginWrap = document.getElementById("login-form-wrap");
+    registerWrap = document.getElementById("register-form-wrap");
+  };
+
+  // ===============================
+  // 🚪 Modal Show/Hide
+  // ===============================
+  const setupModalToggle = () => {
+    if (!modal || !closeModal) return;
+
     closeModal.onclick = () => modal.classList.add("hidden");
+
+    window.onclick = (e) => {
+      if (e.target === modal) {
+        modal.classList.add("hidden");
+      }
+    };
+  };
+
+  // ===============================
+  // 🔁 Login / Register Tabs
+  // ===============================
+  const setupTabs = () => {
+    if (!tabLogin || !tabRegister || !loginWrap || !registerWrap) return;
 
     tabLogin.onclick = () => {
       tabLogin.classList.add("text-indigo-600", "border-indigo-600");
@@ -40,24 +54,26 @@ import { showToast } from "./utils.js";
       registerWrap.classList.remove("hidden");
       loginWrap.classList.add("hidden");
     };
+  };
 
-    window.onclick = function(event) {
-      if (event.target === modal) {
-        modal.classList.add("hidden");
-      }
-    };
+  // ===============================
+  // 🔐 Login Form Submission
+  // ===============================
+  const setupLoginForm = () => {
+    const form = document.getElementById("login-form");
+    const message = document.getElementById("login-message");
 
-    // Handle login
-    document
-      .getElementById("login-form")
-      .addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const data = {
-          username: form.username.value,
-          password: form.password.value,
-        };
+    if (!form || !message) return;
 
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        username: form.username.value,
+        password: form.password.value,
+      };
+
+      try {
         const res = await fetch("/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -68,38 +84,49 @@ import { showToast } from "./utils.js";
 
         if (res.ok) {
           localStorage.setItem("jwt", result.token);
-          location.reload(); // refresh to re-init auth state
+          location.reload(); // refresh to re-init user session
         } else {
-          document.getElementById("login-message").textContent =
-            result.error || "Login failed";
+          message.textContent = result.error || "Login failed";
         }
-      });
+      } catch (err) {
+        console.error("Login error:", err);
+        message.textContent = "An error occurred during login.";
+      }
+    });
+  };
 
-    // Handle register
-    document.getElementById("register-form").onsubmit = async function(e) {
+  // ===============================
+  // 📝 Register Form Submission
+  // ===============================
+  const setupRegisterForm = () => {
+    const form = document.getElementById("register-form");
+    const msg = document.getElementById("register-message");
+
+    if (!form || !msg) return;
+
+    form.onsubmit = async (e) => {
       e.preventDefault();
-      const form = e.target;
+
+      const data = {
+        username: form.username.value,
+        email: form.email.value,
+        password: form.password.value,
+        phonenumber: form.phonenumber.value,
+        display_name: form.display_name.value,
+        bio: form.bio.value,
+      };
 
       try {
         const res = await fetch("/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: form.username.value,
-            email: form.email.value,
-            password: form.password.value,
-            phonenumber: form.phonenumber.value,
-            display_name: form.display_name.value,
-            bio: form.bio.value,
-          }),
+          body: JSON.stringify(data),
         });
-
-        const msg = document.getElementById("register-message");
 
         if (res.ok) {
           showToast("Registration successful!");
           setTimeout(() => {
-            tabLogin.click();
+            document.getElementById("tab-login").click();
             msg.textContent = "";
           }, 1000);
         } else {
@@ -109,30 +136,71 @@ import { showToast } from "./utils.js";
           showToast(errorText, 5000);
         }
       } catch (err) {
-        console.error("Network error during registration:", err);
+        console.error("Registration error:", err);
+        msg.textContent = "An error occurred during registration.";
       }
     };
-  }
+  };
 
-  // Inject JWT token into all HTMX requests
-  document.addEventListener("htmx:configRequest", (event) => {
-    const token = localStorage.getItem("jwt");
-    if (token) {
-      event.detail.headers["Authorization"] = `Bearer ${token}`;
-    }
-  });
+  // ===============================
+  // 🧾 Add JWT Token to HTMX Requests
+  // ===============================
+  const setupJWTInjection = () => {
+    document.addEventListener("htmx:configRequest", (event) => {
+      const token = localStorage.getItem("jwt");
+      if (token) {
+        event.detail.headers["Authorization"] = `Bearer ${token}`;
+      }
+    });
+  };
 
-  // Automatically reattach logout behavior after HTMX updates
-  document.body.addEventListener("htmx:afterSwap", (event) => {
-    if (event.target.id === "user-info") {
-      const logoutBtn = document.getElementById("logout-btn");
-      if (logoutBtn) {
-        logoutBtn.onclick = () => {
-          localStorage.removeItem("jwt");
-          showToast("Logged out!");
-          setTimeout(() => location.reload(), 1000);
-        };
+  // ===============================
+  // 🚪 Reattach Logout Logic After HTMX Swap
+  // ===============================
+  const setupLogoutAfterSwap = () => {
+    document.body.addEventListener("htmx:afterSwap", (event) => {
+      if (event.target.id === "user-info") {
+        const logoutBtn = document.getElementById("logout-btn");
+        if (logoutBtn) {
+          logoutBtn.onclick = () => {
+            localStorage.removeItem("jwt");
+            showToast("Logged out!");
+            setTimeout(() => location.reload(), 1000);
+          };
+        }
+      }
+    });
+  };
+
+  // ===============================
+  // 🚀 Init (on page load)
+  // ===============================
+  const init = () => {
+    cacheDom();
+    setupModalToggle();
+    setupTabs();
+    setupLoginForm();
+    setupRegisterForm();
+    setupJWTInjection();
+    setupLogoutAfterSwap();
+  };
+
+  // Init on initial page load
+  document.addEventListener("DOMContentLoaded", init);
+
+  // Re-init modal logic after HTMX injects the modal
+  document.body.addEventListener("htmx:afterSwap", (e) => {
+    if (e.detail.target.id === "modal-slot") {
+      const modal = document.getElementById("auth-modal");
+      if (modal) {
+        modal.classList.remove("hidden"); // show it
+        cacheDom();
+        setupModalToggle();
+        setupTabs();
+        setupLoginForm();
+        setupRegisterForm();
       }
     }
   });
 })();
+

@@ -1,3 +1,4 @@
+<!-- auth_modal.htmx -->
 <div id="auth-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden overflow-y-auto p-4">
   <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
     

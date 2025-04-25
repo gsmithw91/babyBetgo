@@ -1,4 +1,4 @@
-<!-- Bet Form Partial -->
+<!--bet_form.htmx -->
 <div id="place_bet_form">
   <h2>Place a Bet</h2>
   <form hx-post="/place_bet" hx-target="#bet_result" hx-swap="innerHTML" hx-on:afterRequest="htmx.ajax('GET', '/get_user_balance', {target:'#balance-value', swap:'outerHTML'})">

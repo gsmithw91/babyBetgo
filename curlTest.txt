@@ -1,0 +1,51 @@
+# 1. Register user1
+curl -X POST http://localhost:8040/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user1", "password": "password123", "email": "user1@example.com"}'
+
+# 2. Register user2
+curl -X POST http://localhost:8040/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user2", "password": "password123", "email": "user2@example.com"}'
+
+# 3. Register user3
+curl -X POST http://localhost:8040/register \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user3", "password": "password123", "email": "user3@example.com"}'
+
+# 4. Login as user1 (owner)
+curl -X POST http://localhost:8040/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user1", "password": "password123"}'
+
+# 5. Login as user2
+curl -X POST http://localhost:8040/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user2", "password": "password123"}'
+
+# 6. Login as user3
+curl -X POST http://localhost:8040/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user3", "password": "password123"}'
+
+# 7. Create pregnancy (replace eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIzLCJ1c2VybmFtZSI6InVzZXIzIiwicm9sZSI6InVzZXIiLCJleHAiOjE3NDU2MjIwNDUsImlhdCI6MTc0NTUzNTY0NX0.YH21ipbr6_hH-IBopnuBDSugUK8rd9IXAT-EjBJ5Hg8)
+curl -X POST http://localhost:8040/create_pregnancy \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIzLCJ1c2VybmFtZSI6InVzZXIzIiwicm9sZSI6InVzZXIiLCJleHAiOjE3NDU2MjIwNDUsImlhdCI6MTc0NTUzNTY0NX0.YH21ipbr6_hH-IBopnuBDSugUK8rd9IXAT-EjBJ5Hg8" \
+  -H "Content-Type: application/json" \
+  -d '{"due_date": "2025-12-01T00:00:00Z"}'
+
+# 8. Create baby (replace eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIzLCJ1c2VybmFtZSI6InVzZXIzIiwicm9sZSI6InVzZXIiLCJleHAiOjE3NDU2MjIwNDUsImlhdCI6MTc0NTUzNTY0NX0.YH21ipbr6_hH-IBopnuBDSugUK8rd9IXAT-EjBJ5Hg8 and PREGNANCY_ID)
+curl -X POST http://localhost:8040/pregnancies/PREGNANCY_ID/baby \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIzLCJ1c2VybmFtZSI6InVzZXIzIiwicm9sZSI6InVzZXIiLCJleHAiOjE3NDU2MjIwNDUsImlhdCI6MTc0NTUzNTY0NX0.YH21ipbr6_hH-IBopnuBDSugUK8rd9IXAT-EjBJ5Hg8" \
+  -H "Content-Type: application/json" \
+  -d '{"baby_name": "Zuri"}'
+
+# 9. Grant access to user3 (replace eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIzLCJ1c2VybmFtZSI6InVzZXIzIiwicm9sZSI6InVzZXIiLCJleHAiOjE3NDU2MjIwNDUsImlhdCI6MTc0NTUzNTY0NX0.YH21ipbr6_hH-IBopnuBDSugUK8rd9IXAT-EjBJ5Hg8, PREGNANCY_ID, user_id)
+curl -X POST http://localhost:8040/pregnancies/PREGNANCY_ID/access \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjIzLCJ1c2VybmFtZSI6InVzZXIzIiwicm9sZSI6InVzZXIiLCJleHAiOjE3NDU2MjIwNDUsImlhdCI6MTc0NTUzNTY0NX0.YH21ipbr6_hH-IBopnuBDSugUK8rd9IXAT-EjBJ5Hg8" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 23, "role": "guesser"}'
+
+# 10. View pregnancy as user3 (replace GUEST_TOKEN and PREGNANCY_ID)
+curl -X GET http://localhost:8040/pregnancies/PREGNANCY_ID \
+  -H "Authorization: Bearer GUEST_TOKEN"

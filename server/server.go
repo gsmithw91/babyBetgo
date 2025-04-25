@@ -21,10 +21,11 @@ func ServerStart() {
 	r.Use(middleware.LoggingMiddleware)
 
 	// Unprotected Routes
-	r.Get("/", handlers.IndexHandler)
+	r.Get("/", handlers.BaseHandler)
 	r.Post("/register", handlers.RegisterHandler)
 	r.Post("/login", handlers.LoginHandler)
 	r.Get("/users/{id}", handlers.UserProfileHandler) //dynamic Routes
+	//r.Get("/something_proected",handlers.SomethingToHandler)
 
 	// Protected Routes
 	r.Group(func(protected chi.Router) {
@@ -35,7 +36,7 @@ func ServerStart() {
 		protected.Post("/pregnancies/{id}/baby", handlers.CreateBabyHandler)
 		protected.Post("/pregnancies/{id}/access", handlers.CreateBabyHandler)
 	})
-
+	r.Handle("/templates/*", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	log.Println("Starting Server on :8040")
